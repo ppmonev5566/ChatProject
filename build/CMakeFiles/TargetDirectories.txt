@@ -1,0 +1,5 @@
+C:/Work/Coding/gRPC-projects/ChatProject/build/CMakeFiles/messenger_protos.dir
+C:/Work/Coding/gRPC-projects/ChatProject/build/CMakeFiles/grpc_server.dir
+C:/Work/Coding/gRPC-projects/ChatProject/build/CMakeFiles/grpc_client.dir
+C:/Work/Coding/gRPC-projects/ChatProject/build/CMakeFiles/ALL_BUILD.dir
+C:/Work/Coding/gRPC-projects/ChatProject/build/CMakeFiles/ZERO_CHECK.dir

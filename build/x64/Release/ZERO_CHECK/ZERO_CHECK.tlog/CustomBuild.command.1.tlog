@@ -1,0 +1,10 @@
+^C:\WORK\CODING\GRPC-PROJECTS\CHATPROJECT\BUILD\CMAKEFILES\1A0FBAB1464D85E15DB757D38A7A3930\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Work/Coding/gRPC-projects/ChatProject -BC:/Work/Coding/gRPC-projects/ChatProject/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Work/Coding/gRPC-projects/ChatProject/build/command_line_messenger.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

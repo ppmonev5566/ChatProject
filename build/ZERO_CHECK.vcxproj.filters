@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Work\Coding\gRPC-projects\ChatProject\build\CMakeFiles\1a0fbab1464d85e15db757d38a7a3930\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{0C23900E-45E9-3572-8D6E-719EC2969B2B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
