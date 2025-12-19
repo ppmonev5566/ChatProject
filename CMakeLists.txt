@@ -35,12 +35,15 @@ set(GENERATED_HDRS
     "${GENERATED_DIR}/messenger.grpc.pb.h"
 )
 
-# Get protoc and grpc_cpp_plugin locations
-# Protobuf's config usually defines this variable:
-#   Protobuf_PROTOC_EXECUTABLE
-set(GRPC_CPP_PLUGIN_EXECUTABLE
-    "C:/Work/Coding/gRPC-projects/VCPKG/vcpkg/installed/x64-windows/tools/grpc/grpc_cpp_plugin.exe"
-)
+# find executables
+find_program(Protobuf_PROTOC_EXECUTABLE protoc REQUIRED)
+find_program(GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin REQUIRED)
+if(NOT Protobuf_PROTOC_EXECUTABLE)
+    message(FATAL_ERROR "protoc not found")
+endif()
+if(NOT GRPC_CPP_PLUGIN_EXECUTABLE)
+    message(FATAL_ERROR "grpc_cpp_plugin not found")
+endif()
 
 add_custom_command(
     OUTPUT ${GENERATED_SRCS} ${GENERATED_HDRS}
