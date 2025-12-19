@@ -37,7 +37,7 @@ To run a client:
     - cd Release
     - ./grpc_client.exe
   - Linux/macOS:
-    - ./grpc_clidnt
+    - ./grpc_client
   - You'll be prompted for a local host exactly like the server prompted; make sure to enter the same one.
   - You'll also be prompted for a username.
 
