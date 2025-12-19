@@ -15,96 +15,88 @@ using grpc::Status;
 using messenger::ChatMessage;
 using messenger::ChatService;
 
-// A simple chat client that connects to ChatService::Chat (bidirectional stream)
 class ChatClient {
-public:
-    ChatClient(std::shared_ptr<Channel> channel, std::string username)
-        : stub_(ChatService::NewStub(channel)), username_(std::move(username)) {}
+    private:
+        std::unique_ptr<ChatService::Stub> stub_;
+        std::string username;
+    public:
+        ChatClient(std::shared_ptr<Channel> channel, std::string username) : stub_(ChatService::NewStub(channel)), username(std::move(username)) {}
+        void Run() {
+            ClientContext context;
+            std::shared_ptr<ClientReaderWriter<ChatMessage, ChatMessage>> stream(stub_->Chat(&context));
+            
+            if (!stream) {
+                std::cerr << "Failed to open stream to server." << std::endl;
+                return;
+            }
 
-    void Run() {
-        ClientContext context;
+            ChatMessage intro;
+            intro.set_from(username);
+            intro.set_text(""); 
+            if (!stream->Write(intro)) {
+                std::cerr << "Failed to send intro message." << std::endl;
+                stream->WritesDone();
+                return;
+            }
 
-        std::shared_ptr<ClientReaderWriter<ChatMessage, ChatMessage>> stream(
-            stub_->Chat(&context));
+            //thread to handle the incoming messages on the side
+            std::thread reader([this, stream]() {
+                ChatMessage incoming;
+                while (stream->Read(&incoming)) {
+                    if (incoming.from() == username && incoming.text().empty()) {
+                        continue;
+                    }
+                    std::cout << std::endl << incoming.from() << ": " << incoming.text() << std::endl << "---> ";
+                }
+                std::cout << "Server closed the stream." << std::endl;
+            });
 
-        if (!stream) {
-            std::cerr << "Failed to open stream to server." << std::endl;
-            return;
-        }
-
-        ChatMessage intro;
-        intro.set_from(username_);
-        intro.set_text(""); 
-        if (!stream->Write(intro)) {
-            std::cerr << "Failed to send intro message." << std::endl;
-            stream->WritesDone();
-            return;
-        }
-
-        std::thread reader([this, stream]() {
-            ChatMessage incoming;
-            while (stream->Read(&incoming)) {
-                if (incoming.from() == username_ && incoming.text().empty()) {
-                    continue;
+            //loop to handle outbound messages
+            std::cout << "Type messages and press Enter to send. Type /quit to exit." << std::endl;
+            std::string line;
+            while (true) {
+                std::cout << "---> ";
+                if (!std::getline(std::cin, line)) { 
+                    break;
+                }
+                if (line == "/quit") {
+                    break;
                 }
 
-                std::cout << incoming.from() << ": " << incoming.text() << std::endl;
+                ChatMessage msg;
+                msg.set_from(username);
+                msg.set_text(line);
+
+                if (!stream->Write(msg)) {
+                    std::cerr << "Your message failed to send because the stream closed." << std::endl;
+                    break;
+                }
             }
 
-            std::cout << "Server closed the stream." << std::endl;
-        });
+            stream->WritesDone();
+            reader.join();
 
-        std::string line;
-        std::cout << "Type messages and press Enter to send. Type /quit to exit." << std::endl;
-
-        while (true) {
-            if (!std::getline(std::cin, line)) {
-                break;
-            }
-
-            if (line == "/quit") {
-                break;
-            }
-
-            ChatMessage msg;
-            msg.set_from(username_);
-            msg.set_text(line);
-
-            if (!stream->Write(msg)) {
-                std::cerr << "Write failed (stream closed)." << std::endl;
-                break;
+            Status status = stream->Finish();
+            if (!status.ok()) {
+                std::cerr << "Chat RPC failed: " << status.error_code() << " - " << status.error_message() << std::endl;
             }
         }
-
-        stream->WritesDone();
-
-        reader.join();
-
-        Status status = stream->Finish();
-        if (!status.ok()) {
-            std::cerr << "Chat RPC failed: " << status.error_code() << " - " << status.error_message() << std::endl;
-        }
-    }
-
-private:
-    std::unique_ptr<ChatService::Stub> stub_;
-    std::string username_;
 };
 
 int main(int argc, char** argv) {
-    std::string server_address = "localhost:50051";
+    //50051
+    std::string local_port;
     std::string username;
+
+    std::cout << "Enter localhost port number to connect to: ";
+    std::getline(std::cin, local_port);
+
     std::cout << "Enter username: ";
-    std::cin >> username;
+    std::getline(std::cin, username);
 
+    std::cout << "Connecting to " << "localhost:" << local_port << " as user [" << username << "]" << std::endl;
 
-    std::cout << "Connecting to " << server_address
-              << " as user [" << username << "]" << std::endl;
-
-    ChatClient client(
-        grpc::CreateChannel(server_address, grpc::InsecureChannelCredentials()),
-        username);
-
+    ChatClient client(grpc::CreateChannel("localhost:" + local_port, grpc::InsecureChannelCredentials()), username);
     client.Run();
 
     return 0;
